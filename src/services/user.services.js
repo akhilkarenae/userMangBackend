@@ -1,13 +1,13 @@
-import { allusers, create, findUserByEmail, findUserById, update } from "../db/repository/user.repository.js";
+import { allusers, create, deleteUser, findUserByEmail, findUserById, update } from "../db/repository/user.repository.js";
 
 
-const createUserService = async ({email, phoneNumber, fullName}) => {
+const createUserService = async ({email, phoneNumber, fullName, admin}) => {
     try {
         const user = await findUserByEmail(email)
         if(user){
             throw new Error("User exists")
         }
-        const newUser = await create(email, phoneNumber, fullName)
+        const newUser = await create(email, phoneNumber, fullName, admin)
         return newUser;
     } catch (err) { 
         throw new Error(err);
@@ -46,6 +46,19 @@ const UpdateUserService = async ({id,email,phoneNumber,fullName}) =>{
     }
 }
 
+const deleteUserService = async ({id}) =>{
+    try{
+        const user = await findUserById(id)
+        if(!user){
+            throw new Error("User not found")
+        }
+        const deletedUser = await deleteUser(id);
+        return deleteUser
+    }catch(err){
+        throw new Error(err);
+    }
+}
+
 const addFriendService = async ({userId,friendName}) =>{
     try{
         const user = await findUserById(userId)
@@ -63,4 +76,17 @@ const addFriendService = async ({userId,friendName}) =>{
     }
 }
 
-export { createUserService, userService, UpdateUserService, addFriendService }
+const friendsListService = async ({userId}) =>{
+    try{
+        const user = await findUserById(userId)
+        if(!user){
+            throw new Error("User not found for the given id")
+        }
+        const { myFriends } = user;
+        return myFriends;
+    }catch(err){
+        throw new Error(err);
+    }
+}
+
+export { createUserService, userService, UpdateUserService, deleteUserService, addFriendService, friendsListService }

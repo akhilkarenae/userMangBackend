@@ -1,29 +1,24 @@
-import { addFriendService, createUserService, UpdateUserService, userService } from "../services/user.services.js";
+import { addFriendService, createUserService, deleteUserService, friendsListService, UpdateUserService, userService } from "../services/user.services.js";
 import { validateUser } from "../utils/validation.utils.js";
 
 
 const createUser = async (req,res,next) =>{
     try{
+        const admin = req.user
         const {email,fullName,phoneNumber} = req.body;
         const validateErrors = validateUser({email,phoneNumber,fullName})
         if (validateErrors.length > 0) {
             throw new Error(validateErrors);
         }
-        // const user = await findUserByEmail(email);
-        const newUser = await createUserService({email,phoneNumber,fullName})
+        const newUser = await createUserService({email,phoneNumber,fullName,admin})
         return res.status(200).send({success:true,message:"User created succesfully"})
     }catch(err){
         next(err)
     }
 }
 
-const getUsers = async (req,res,next) =>{
+const getUsers = async (req,res,next) => {
     try{
-        // const {id} = req.params;
-        // if(!id){
-        //     return res.status(400).send({success:false,message:"user id cannot be empty"})
-        // }
-
         const user = await userService();
         return res.status(200).send({success:true,users:user})
     }catch(err){
@@ -38,8 +33,20 @@ const updateUser = async (req,res,next) =>{
             return res.status(400).send({success:false,message:"user id cannot be empty"})
         }
         const updatedUser = await UpdateUserService({id,email,phoneNumber,fullName})
-        console.log(updatedUser," updated user");
         return res.status(200).send({success:true,message:"User updated successfully"})
+    }catch(err){
+        next(err)
+    }
+}
+
+const deleteUser = async ( req,res,next) =>{
+    try{
+        const {id} = req.body;
+        if(!id){
+            return res.status(400).send({success:false,message:"user id cannot be empty"})
+        }
+        await deleteUserService((id))
+        return res.status(200).send({success:true,message:"User deleted successfully"})
     }catch(err){
         next(err)
     }
@@ -47,15 +54,39 @@ const updateUser = async (req,res,next) =>{
 
 const addFriend = async (req,res,next) =>{
     try{
-        const { userId,friendName }= req.body;
-        if(friendName.length<3){
+        const { userId, friend } = req.body;
+        if(!userId){
+            return res.status(400).send({message:false,message:"User id is not found"})
+        }
+        if(!friend.friendName || friend.friendName.length<3){
             return res.status(413).send({success:false,message:"friend name length cannot be less than 3 chars"})
         }
-        const updatedUser = await addFriendService({userId,friendName})
+        const updatedUser = await addFriendService({userId,friendName:friend.friendName})
         return res.status(200).send({success:true,message:"New friend added successfully"})
     }catch(err){
         next(err)
     }
 }
 
-export { createUser, getUsers, updateUser, addFriend}
+const getfriendlist = async (req,res,next) => {
+    try{
+        const {userId} =  req.params;
+        if(!userId){
+            return res.status(400).send({message:false,message:"User id is not found"})
+        }
+        const friendslist = await friendsListService({userId});
+        return res.status(200).send({success:true,friendsList:friendslist})
+    }catch(err){
+        next(err)
+    }
+}
+
+const deleteFriend = async (req,res,next) =>{
+    try{
+        const {} = req.body;
+    }catch(err){
+        next(err)
+    }
+}
+
+export { createUser, getUsers, updateUser, deleteUser, addFriend, getfriendlist }
