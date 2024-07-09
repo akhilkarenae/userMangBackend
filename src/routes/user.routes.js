@@ -1,5 +1,5 @@
 import express from "express";
-import { addFriend, createUser, deleteUser, getfriendlist, getUsers, updateUser } from "../controllers/user.controllers.js";
+import { addFriend, createUser, deleteFriend, deleteUser, getfriendlist, getUserById, getUsers, updateUser } from "../controllers/user.controllers.js";
 
 const userRouter = express.Router();
 
@@ -14,10 +14,12 @@ const isAuthenticated = (req, res, next) => {
 userRouter.post("/create", isAuthenticated, createUser);
 userRouter.get("/", isAuthenticated, getUsers)
 userRouter.put("/update", isAuthenticated, updateUser)
-userRouter.delete("/delete", isAuthenticated, deleteUser)
+userRouter.get("/:userId", isAuthenticated, getUserById)
+userRouter.delete("/delete/:id",isAuthenticated, deleteUser)
 
-userRouter.put("/add-friend",addFriend)
-userRouter.get("/:userId/friends",getfriendlist)
+userRouter.put("/add-friend", addFriend )
+userRouter.get("/:userId/friends", getfriendlist )
+userRouter.put("/delete-friend", isAuthenticated, deleteFriend)
 
 
 export default userRouter;

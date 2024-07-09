@@ -1,10 +1,11 @@
-import { addFriendService, createUserService, deleteUserService, friendsListService, UpdateUserService, userService } from "../services/user.services.js";
+import { addFriendService, createUserService, deleteFriendService, deleteUserService, friendsListService, updateUserService, userByIdService, userService } from "../services/user.services.js";
 import { validateUser } from "../utils/validation.utils.js";
 
 
 const createUser = async (req,res,next) =>{
     try{
         const admin = req.user
+        console.log(admin, "admin")
         const {email,fullName,phoneNumber} = req.body;
         const validateErrors = validateUser({email,phoneNumber,fullName})
         if (validateErrors.length > 0) {
@@ -20,7 +21,22 @@ const createUser = async (req,res,next) =>{
 const getUsers = async (req,res,next) => {
     try{
         const user = await userService();
+        console.log(user, " users")
         return res.status(200).send({success:true,users:user})
+    }catch(err){
+        next(err)
+    }
+}
+
+const getUserById = async (req,res,next) =>{
+    try{
+        const {userId} = req.params;
+        if(!userId){
+            return res.status(400).send({success:false,message:"userId cannot be empty"})
+        }
+        const user = await userByIdService({userId})
+
+        return res.status(200).send({success:true,user:user})
     }catch(err){
         next(err)
     }
@@ -28,11 +44,11 @@ const getUsers = async (req,res,next) => {
 
 const updateUser = async (req,res,next) =>{
     try{
-        const {id,email,phoneNumber,fullName} = req.body;
+        const {id,user} = req.body;
         if(!id){
             return res.status(400).send({success:false,message:"user id cannot be empty"})
         }
-        const updatedUser = await UpdateUserService({id,email,phoneNumber,fullName})
+        const updatedUser = await updateUserService({id,user})
         return res.status(200).send({success:true,message:"User updated successfully"})
     }catch(err){
         next(err)
@@ -41,7 +57,7 @@ const updateUser = async (req,res,next) =>{
 
 const deleteUser = async ( req,res,next) =>{
     try{
-        const {id} = req.body;
+        const id = req.params;
         if(!id){
             return res.status(400).send({success:false,message:"user id cannot be empty"})
         }
@@ -83,10 +99,15 @@ const getfriendlist = async (req,res,next) => {
 
 const deleteFriend = async (req,res,next) =>{
     try{
-        const {} = req.body;
+        const {userId, friendId} = req.body;
+        if(!userId || !friendId){
+            return res.status(400).send({message:false,message:"User id and friendName is not found"})
+        }
+        const deleteFriend = await deleteFriendService({userId, friendId})
+        return res.status(200).send({success:true,message:"success"})
     }catch(err){
         next(err)
     }
 }
 
-export { createUser, getUsers, updateUser, deleteUser, addFriend, getfriendlist }
+export { createUser, getUsers, getUserById, updateUser, deleteUser, addFriend, getfriendlist, deleteFriend }

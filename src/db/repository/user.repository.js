@@ -12,8 +12,7 @@ export  const findUserById = async (id) =>{
 }
 
 export const create = async (email,phoneNumber, fullName, admin) =>{
-    console.log(admin._id,"admin _id")
-    const user = new UserModel({ email: email, phoneNumber: phoneNumber, fullName:fullName, createdBy: admin._id});
+    const user = new UserModel({ email: email, phoneNumber: phoneNumber, fullName:fullName, createdBy: admin._id, createdByEmail: admin.email});
     const newUser = user.save();
     return newUser;
 }
@@ -23,8 +22,8 @@ export const allusers = async () =>{
     return users
 }
 
-export const update = async (id,data) =>{
-    const updatedUser = await  UserModel.findByIdAndUpdate({ _id: id }, { ...data },{ new: true })
+export const update = async (id, userData) =>{
+    const updatedUser = await  UserModel.findByIdAndUpdate({ _id: id }, { ...userData },{ new: true })
     return updatedUser;
 }
 

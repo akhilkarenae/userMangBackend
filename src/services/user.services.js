@@ -1,4 +1,5 @@
 import { allusers, create, deleteUser, findUserByEmail, findUserById, update } from "../db/repository/user.repository.js";
+import { removeItem } from "../utils/helper.utils.js";
 
 
 const createUserService = async ({email, phoneNumber, fullName, admin}) => {
@@ -23,25 +24,28 @@ const userService = async () =>{
     }
 }
 
-const UpdateUserService = async ({id,email,phoneNumber,fullName}) =>{
+const userByIdService = async ({userId}) =>{
     try{
-        const user = await findUserById(id)
+        const user = await findUserById(userId)
         if(!user){
             throw new Error("User not found")
         }
-        const data = {}
-        if(email){
-            data.email = email
+        return user;
+    }catch (err) { 
+        throw new Error(err);
+    }
+}
+
+const updateUserService = async ({id,user}) =>{
+    try{
+        const isUser = await findUserById(id)
+        if(!isUser){
+            throw new Error("User not found")
         }
-        if(phoneNumber){
-            data.phoneNumber=phoneNumber
-        }
-        if(fullName){
-            data.fullName=fullName
-        }
-        const updatedUser = await update(id,data)
+        const updatedUser = await update(id,user)
         return updatedUser;
     }catch(err){
+        console.log(err, " error from here")
         throw new Error(err);
     }
 }
@@ -53,7 +57,7 @@ const deleteUserService = async ({id}) =>{
             throw new Error("User not found")
         }
         const deletedUser = await deleteUser(id);
-        return deleteUser
+        return deletedUser;
     }catch(err){
         throw new Error(err);
     }
@@ -89,4 +93,24 @@ const friendsListService = async ({userId}) =>{
     }
 }
 
-export { createUserService, userService, UpdateUserService, deleteUserService, addFriendService, friendsListService }
+const deleteFriendService = async ({userId,friendId}) =>{
+    try{
+        const user = await findUserById(userId)
+        if(!user){
+            throw new Error("User not found for the given id")
+        }
+
+        const friends = user.myFriends;
+        console.log(friends)
+
+        const  updatedArray = removeItem(friends,friendId)
+        console.log(updatedArray)
+        user.myFriends = updatedArray
+        const updatedUser = await update(userId,user);
+        return updatedUser;
+    }catch(err){
+        throw new Error(err);
+    }
+}
+
+export { createUserService, userService, userByIdService, updateUserService, deleteUserService, addFriendService, friendsListService, deleteFriendService }
